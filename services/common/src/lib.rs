@@ -52,11 +52,8 @@ pub struct Service {
 impl Default for Service {
     fn default() -> Self {
         Self {
-            server: "".to_string(),
-            server_connected: false,
-            channel: Default::default(),
-            subscriptions: Default::default(),
             shared_state: std::sync::Arc::new(Container::new()),
+            ..Default::default()
         }
     }
 }

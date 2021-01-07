@@ -160,8 +160,8 @@ mod tests {
         tracing::info!("Nodes: {:?}", nodes);
 
         CreatePool {
-            node: mayastor.to_string(),
-            name: "pooloop".to_string(),
+            node: mayastor.into(),
+            id: "pooloop".into(),
             disks: vec!["malloc:///disk0?size_mb=100".into()],
         }
         .request()
@@ -230,7 +230,7 @@ mod tests {
 
         DestroyPool {
             node: mayastor.into(),
-            name: "pooloop".into(),
+            id: "pooloop".into(),
         }
         .request()
         .await

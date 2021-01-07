@@ -76,7 +76,7 @@ struct NodeStore {
     inner: std::sync::Arc<NodeStoreInner>,
 }
 struct NodeStoreInner {
-    state: Mutex<HashMap<String, (Node, Watchdog)>>,
+    state: Mutex<HashMap<NodeId, (Node, Watchdog)>>,
     deadline: std::time::Duration,
 }
 impl Default for NodeStoreInner {
@@ -119,7 +119,7 @@ impl NodeStore {
         state.remove(&node.id);
     }
     /// Offline node through its id
-    async fn offline(&self, id: String) {
+    async fn offline(&self, id: NodeId) {
         let mut state = self.inner.state.lock().await;
         if let Some(n) = state.get_mut(&id) {
             n.0.state = NodeState::Offline;
@@ -251,7 +251,7 @@ mod tests {
     #[tokio::test]
     async fn node() -> Result<(), Box<dyn std::error::Error>> {
         init_tracing();
-        let maya_name = "node-test-name";
+        let maya_name = NodeId::from("node-test-name");
         let test = Builder::new()
             .name("node")
             .add_container_bin(
@@ -268,7 +268,7 @@ mod tests {
                 "mayastor",
                 Binary::from_dbg("mayastor")
                     .with_nats("-n")
-                    .with_args(vec!["-N", maya_name]),
+                    .with_args(vec!["-N", maya_name.as_str()]),
             )
             .with_clean(true)
             .autorun(false)
@@ -283,7 +283,7 @@ mod tests {
         assert_eq!(
             nodes.0.first().unwrap(),
             &Node {
-                id: maya_name.to_string(),
+                id: maya_name.clone(),
                 grpc_endpoint: "0.0.0.0:10124".to_string(),
                 state: NodeState::Online,
             }
@@ -295,7 +295,7 @@ mod tests {
         assert_eq!(
             nodes.0.first().unwrap(),
             &Node {
-                id: maya_name.to_string(),
+                id: maya_name.clone(),
                 grpc_endpoint: "0.0.0.0:10124".to_string(),
                 state: NodeState::Offline,
             }
